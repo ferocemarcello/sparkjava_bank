@@ -1,8 +1,9 @@
 package io.bankbridge.handler;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.FileReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
@@ -17,6 +18,12 @@ import io.bankbridge.model.BankModel;
 import io.bankbridge.model.BankModelList;
 import spark.Request;
 import spark.Response;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
+import com.google.gson.Gson;
 
 public class BanksCacheBased {
 

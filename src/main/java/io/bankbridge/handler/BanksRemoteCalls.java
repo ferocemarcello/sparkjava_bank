@@ -1,10 +1,14 @@
 package io.bankbridge.handler;
+import java.io.File;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.json.simple.JSONObject;
 import spark.Request;
 import spark.Response;
+
+import static util.JsonUtil.getJsonFromFile;
 
 public class BanksRemoteCalls {
 
@@ -18,6 +22,12 @@ public class BanksRemoteCalls {
 	public static String handle(Request request, Response response) {
 		System.out.println(config);
 		throw new RuntimeException("Not implemented");
+	}
+	public static JSONObject handleBanksVOne(Request request, Response response) {
+		String home_dir = System.getProperty("user.dir");
+		String jsonpath = home_dir+ File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"banks-v1.json";
+		JSONObject json_output = getJsonFromFile(jsonpath);
+		return json_output;
 	}
 
 }

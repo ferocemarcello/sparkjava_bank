@@ -13,8 +13,9 @@ public class Main {
 
 		BanksCacheBased.init();
 		BanksRemoteCalls.init();
-		
-		get("/v1/banks/all", (request, response) -> BanksCacheBased.handle(request, response));
+
+		get("/v1/banks/all", (request, response) -> BanksRemoteCalls.handleBanksVOne(request, response));
+		//get("/v1/banks/all", (request, response) -> BanksCacheBased.handle(request, response));
 		get("/v2/banks/all", (request, response) -> BanksRemoteCalls.handle(request, response));
 	}
 }
