@@ -18,13 +18,16 @@ import java.util.Scanner;
 
 public class Main {
 	public static BankDao bankDao;
-
+	public static boolean Initialized = false;
 	public static void main(String[] args) throws Exception {
 		bankDao = new BankDao();
 		
 		port(8080);
 
-		bankDao.initBanks("banks-v1.json");
+		if(!Main.Initialized) {
+			bankDao.initBanks("banks-v1.json");
+			Initialized = true;
+		}
 		//BanksRemoteCalls.init();
 
 		get("/v1/banks/all_json", (request, response) -> BanksCacheBased.handleBanksVOne_json(request, response));

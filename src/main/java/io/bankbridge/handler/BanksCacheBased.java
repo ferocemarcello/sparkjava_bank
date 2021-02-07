@@ -65,24 +65,16 @@ public class BanksCacheBased {
 	}
 	public static JSONArray handleBanksVOne_json(Request request, Response response) {
 		response.type("application/json");
-		JSONArray banks_json = JsonUtil.getBanksJson("banks-v1.json");
-		Iterator<Object> iterator = banks_json.iterator();
-		while(iterator.hasNext()){
-			JSONObject jsonObject = (JSONObject) iterator.next();
-			/*Map<String, Object> map = new HashMap<String, Object>();
-
-			map.put("name",jsonObject.get("name"));
-			map.put("bic",jsonObject.get("bic"));
-			map.put("countryCode",jsonObject.get("countryCode"));
-			map.put("products",jsonObject.get("products"));
-
-			banks_json.remove(jsonObject);
-			jsonObject = new JSONObject(map);
-			banks_json.add(jsonObject);*/
-			jsonObject.remove("auth");
-		}
-		return banks_json;
+		return BanksCacheBased.getBanksJsonVersionOne();
 	}
+
+	public static JSONArray getBanksJsonVersionOne() {
+		List<Map<String,Object>> filtered_banks = Main.bankDao.filterBanks(new String[]{"name","bic","countryCode","products"});
+		JSONArray jsonArray = new JSONArray();
+		filtered_banks.forEach(m -> jsonArray.add(new JSONObject(m)));
+		return jsonArray;
+	}
+
 	public static Map<String, Object> handleBanksVOne_model() {
 		Map<String, Object> model = new HashMap<>();
 		model.put("banks", Main.bankDao.filterBanks(new String[]{"name","bic","countryCode","products"}));

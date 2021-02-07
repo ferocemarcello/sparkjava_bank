@@ -29,35 +29,34 @@ public class BanksRemoteCalls {
 		System.out.println(config);
 		throw new RuntimeException("Not implemented");
 	}
-	public static JSONArray handleBanksVTwo(Request request, Response response) {
-		JSONObject jsonob = null;
-		response.type("application/json");
+	public static JSONArray getBanksRemoteJsonTwo() {
 		String jsonpath = "banks-v2.json";
 		JSONObject json_output = JsonUtil.getJsonFromFile(jsonpath);
 		List<String> response_bodies = new ArrayList<>();
 		JSONParser parser = new JSONParser();
-		for (Object o:json_output.entrySet().toArray()) {
-			Map.Entry<String, String> map = (Map.Entry<String, String>) o;
-			String name = map.getKey();
-			String url = map.getValue();
-			url = "http://localhost:1234/"+url.split("/")[url.split("/").length-1];
+
+		json_output.forEach((name,uri) -> {
+			String url = (String) uri;
 			HttpClient client = HttpClient.newHttpClient();
 			HttpRequest req = HttpRequest.newBuilder()
 					.uri(URI.create(url))
 					.build();
 			HttpResponse.BodyHandler<String> bh = HttpResponse.BodyHandlers.ofString();
 			client.sendAsync(req,bh).thenApply(x->x.body()).thenAccept(x -> response_bodies.add(x)).join();
-		}
+		});
 		JSONArray js_arr = new JSONArray();
-		for (String b: response_bodies) {
+		response_bodies.forEach(x -> {
 			try {
-				jsonob = (JSONObject) parser.parse(b);
+				js_arr.add(parser.parse(x));
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
-			js_arr.add(jsonob);
-		}
+		});
 		return js_arr;
+	}
+	public static JSONArray handleBanksVTwo(Request request, Response response) {
+		response.type("application/json");
+		return getBanksRemoteJsonTwo();
 	}
 
 }
