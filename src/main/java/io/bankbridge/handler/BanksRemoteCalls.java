@@ -32,8 +32,7 @@ public class BanksRemoteCalls {
 	public static JSONArray handleBanksVTwo(Request request, Response response) {
 		JSONObject jsonob = null;
 		response.type("application/json");
-		String home_dir = System.getProperty("user.dir");
-		String jsonpath = home_dir+ File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"banks-v2.json";
+		String jsonpath = "banks-v2.json";
 		JSONObject json_output = JsonUtil.getJsonFromFile(jsonpath);
 		List<String> response_bodies = new ArrayList<>();
 		JSONParser parser = new JSONParser();

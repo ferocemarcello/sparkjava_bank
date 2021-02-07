@@ -1,10 +1,8 @@
 package io.bankbridge.handler;
 import java.io.File;
-import java.io.FileReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
+import io.bankbridge.Main;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -16,15 +14,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.bankbridge.model.BankModel;
 import io.bankbridge.model.BankModelList;
+import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
-import com.google.gson.Gson;
+import spark.Route;
 import util.JsonUtil;
+import util.ViewUtil;
+
+import static util.RequestUtil.clientAcceptsHtml;
 
 public class BanksCacheBased {
 
@@ -62,7 +63,7 @@ public class BanksCacheBased {
 		}
 
 	}
-	public static JSONArray handleBanksVOne(Request request, Response response) {
+	public static JSONArray handleBanksVOne_json(Request request, Response response) {
 		response.type("application/json");
 		JSONArray banks_json = JsonUtil.getBanksJson("banks-v1.json");
 		Iterator<Object> iterator = banks_json.iterator();
@@ -81,6 +82,12 @@ public class BanksCacheBased {
 			jsonObject.remove("auth");
 		}
 		return banks_json;
+	}
+	public static Map<String, Object> handleBanksVOne_model() {
+		Map<String, Object> model = new HashMap<>();
+		model.put("banks", Main.bankDao.filterBanks(new String[]{"name","bic","countryCode","products"}));
+		model.put("message", "Banks, Version 1, Cached");
+		return model;
 	}
 
 }

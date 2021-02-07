@@ -7,15 +7,12 @@ import org.json.simple.JSONObject;
 import util.JsonUtil;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BankDao {
     public void initBanks(String json_name) {
         JSONArray banks_json_array = JsonUtil.getBanksJson(json_name);
-        List<BankModel> bankList = new ArrayList<BankModel>();
+        List<BankModel> bankList = new ArrayList<>();
         for (Object var : banks_json_array)
         {
             String bic = ((JSONObject) var).get("bic").toString();
@@ -33,21 +30,21 @@ public class BankDao {
         }
         BankModelList.banks = bankList;
     }
-    public Object[] filterBanks(String[] fieldNames) {
+    public List<Map<String,Object>> filterBanks(String[] fieldNames) {
         List<String> fieldNames_l = Arrays.asList(fieldNames);
-        List<BankModel> banks = BankModelList.banks;
-        List<Object> filtered_banks = new ArrayList<Object>();
-        banks.forEach(bankModel -> {
-            ObjectMapper oMapper = new ObjectMapper();
-            // object -> Map
-            Map<String, Object> map = oMapper.convertValue(bankModel, Map.class);
-            map.keySet().forEach(f -> {
-                if(!fieldNames_l.contains(f)) {
-                    map.remove(f);
+        List<Map<String,Object>> filtered_banks = new ArrayList<>();
+        for (BankModel b:BankModelList.banks) {
+            Map<String,Object> map = b.BankToMap();
+            Set<String> toRemove_set = new HashSet<>();
+                for (String k: map.keySet()
+                ) {
+                    if (!fieldNames_l.contains(k)) {
+                        toRemove_set.add(k);
+                    }
                 }
-            });
+            map.keySet().removeAll(toRemove_set);
             filtered_banks.add(map);
-        });
-        return filtered_banks.toArray();
+            }
+        return filtered_banks;
     }
 }

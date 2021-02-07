@@ -1,6 +1,8 @@
 package io.bankbridge.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BankModel {
 	
@@ -56,5 +58,15 @@ public class BankModel {
 		this.countryCode = countryCode;
 		this.auth = auth;
 		this.products = products;
+	}
+
+	public Map<String,Object> BankToMap () {
+		Map<String,Object> map = new HashMap<>();
+		map.put("name",this.getName());
+		map.put("bic",this.getBic());
+		map.put("countryCode",this.getCountryCode());
+		map.put("products",this.getProducts());
+		map.put("auth",this.getAuth());
+		return map;
 	}
 }

@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>Banks V1</title>
+    </head>
+    <body>
+        <h1>$message</h1>
+        <div>
+        <ul>
+            #foreach($bank in $banks)
+            <li>$bank.get("bic")
+                <ul>
+                    <li>$bank.get("name")</li>
+                    <li>$bank.get("countryCode")</li>
+                    <li>$bank.get("products")</li>
+                </ul>
+            </li>
+            #end
+        </ul>
+        </div>
+    </body>
+</html>
