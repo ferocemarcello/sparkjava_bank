@@ -24,8 +24,16 @@ public class BanksRemoteCalls {
 		throw new RuntimeException("Not implemented");
 	}
 	public static JSONObject handleBanksVOne(Request request, Response response) {
+		response.type("application/json");
 		String home_dir = System.getProperty("user.dir");
 		String jsonpath = home_dir+ File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"banks-v1.json";
+		JSONObject json_output = getJsonFromFile(jsonpath);
+		return json_output;
+	}
+	public static JSONObject handleBanksVTwo(Request request, Response response) {
+		response.type("application/json");
+		String home_dir = System.getProperty("user.dir");
+		String jsonpath = home_dir+ File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"banks-v2.json";
 		JSONObject json_output = getJsonFromFile(jsonpath);
 		return json_output;
 	}
