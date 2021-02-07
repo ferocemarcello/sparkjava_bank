@@ -14,10 +14,7 @@ import java.util.Map;
 
 public class BankDao {
     public void initBanks(String json_name) {
-        String home_dir = System.getProperty("user.dir");
-        String jsonpath = home_dir + File.separator + "src" + File.separator + "main" + File.separator + "resources" + File.separator + json_name;
-        JSONObject books_v1_json = JsonUtil.getJsonFromFile(jsonpath);
-        JSONArray banks_json_array = (JSONArray) books_v1_json.get("banks");
+        JSONArray banks_json_array = JsonUtil.getBanksJson(json_name);
         List<BankModel> bankList = new ArrayList<BankModel>();
         for (Object var : banks_json_array)
         {

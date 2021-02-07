@@ -24,6 +24,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import com.google.gson.Gson;
+import util.JsonUtil;
 
 public class BanksCacheBased {
 
@@ -60,6 +61,26 @@ public class BanksCacheBased {
 			throw new RuntimeException("Error while processing request");
 		}
 
+	}
+	public static JSONArray handleBanksVOne(Request request, Response response) {
+		response.type("application/json");
+		JSONArray banks_json = JsonUtil.getBanksJson("banks-v1.json");
+		Iterator<Object> iterator = banks_json.iterator();
+		while(iterator.hasNext()){
+			JSONObject jsonObject = (JSONObject) iterator.next();
+			/*Map<String, Object> map = new HashMap<String, Object>();
+
+			map.put("name",jsonObject.get("name"));
+			map.put("bic",jsonObject.get("bic"));
+			map.put("countryCode",jsonObject.get("countryCode"));
+			map.put("products",jsonObject.get("products"));
+
+			banks_json.remove(jsonObject);
+			jsonObject = new JSONObject(map);
+			banks_json.add(jsonObject);*/
+			jsonObject.remove("auth");
+		}
+		return banks_json;
 	}
 
 }

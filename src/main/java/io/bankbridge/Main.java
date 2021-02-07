@@ -17,7 +17,7 @@ public class Main {
 		bankDao.initBanks("banks-v1.json");
 		BanksRemoteCalls.init();
 
-		get("/v1/banks/all", (request, response) -> BanksRemoteCalls.handleBanksVOne(request, response));
+		get("/v1/banks/all", (request, response) -> BanksCacheBased.handleBanksVOne(request, response));
 		//get("/v1/banks/all", (request, response) -> BanksCacheBased.handle(request, response));
 		get("/v2/banks/all", (request, response) -> BanksRemoteCalls.handleBanksVTwo(request, response));
 	}
