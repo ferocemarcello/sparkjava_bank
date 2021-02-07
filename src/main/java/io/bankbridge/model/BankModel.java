@@ -4,10 +4,57 @@ import java.util.ArrayList;
 
 public class BankModel {
 	
-	public String bic;
-	public String name;
-	public String countryCode;
-	public String auth;
-	public ArrayList products;
+	private String bic;
+	private String name;
+	private String countryCode;
+	private String auth;
+	private ArrayList<String> products;
 
+	public String getBic() {
+		return bic;
+	}
+
+	public void setBic(String bic) {
+		this.bic = bic;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getCountryCode() {
+		return countryCode;
+	}
+
+	public void setCountryCode(String countryCode) {
+		this.countryCode = countryCode;
+	}
+
+	public String getAuth() {
+		return auth;
+	}
+
+	public void setAuth(String auth) {
+		this.auth = auth;
+	}
+
+	public ArrayList<String> getProducts() {
+		return products;
+	}
+
+	public void setProducts(ArrayList<String> products) {
+		this.products = products;
+	}
+
+	public BankModel(String bic, String name, String countryCode, String auth, ArrayList<String> products) {
+		this.bic = bic;
+		this.name = name;
+		this.countryCode = countryCode;
+		this.auth = auth;
+		this.products = products;
+	}
 }

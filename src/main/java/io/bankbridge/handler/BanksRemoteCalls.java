@@ -4,6 +4,9 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.bankbridge.Main;
+import io.bankbridge.model.BankDao;
+import io.bankbridge.model.BankModelList;
 import org.json.simple.JSONObject;
 import spark.Request;
 import spark.Response;
@@ -25,10 +28,8 @@ public class BanksRemoteCalls {
 	}
 	public static JSONObject handleBanksVOne(Request request, Response response) {
 		response.type("application/json");
-		String home_dir = System.getProperty("user.dir");
-		String jsonpath = home_dir+ File.separator+"src"+File.separator+"main"+File.separator+"resources"+File.separator+"banks-v1.json";
-		JSONObject json_output = getJsonFromFile(jsonpath);
-		return json_output;
+		Object bml = Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "product"});
+		return (JSONObject) BankModelList.banks;
 	}
 	public static JSONObject handleBanksVTwo(Request request, Response response) {
 		response.type("application/json");
