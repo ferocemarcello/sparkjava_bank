@@ -13,6 +13,7 @@
         <h1>$message</h1>
         <label for="page_items">Number of banks per page (1-20):</label>
         <input type="number" id="page_items" min="1" max="20" value="5" onchange="resize_page(parseInt(value))">
+        <input type="text" id="ccfilter" onkeyup="filter(value)" placeholder="Filter by Country Code">
         <div id="listdiv">
             <ul id="banklist" class="list">
                 #foreach($bank in $banks)
@@ -67,6 +68,10 @@
                     page: size,
                     pagination: true
                 });
+            }
+            function filter(pattern) {
+                var pattern= pattern.toUpperCase();
+                resize_page(10);
             }
         </script>
     </body>
