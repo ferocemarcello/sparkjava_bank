@@ -67,4 +67,10 @@ public class BanksRemoteCalls {
 		response.type("application/json");
 		return getBanksRemoteJsonTwo();
 	}
+
+	public static Map<String, Object> Hello() {
+		Map<String, Object> model = new HashMap<>();
+		model.put("title", "Hello Trial");
+		return model;
+	}
 }
