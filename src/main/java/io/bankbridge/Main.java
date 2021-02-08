@@ -7,14 +7,9 @@ import io.bankbridge.handler.BanksCacheBased;
 import io.bankbridge.handler.BanksRemoteCalls;
 import io.bankbridge.model.BankDao;
 import spark.ModelAndView;
-import spark.resource.ClassPathResource;
 import spark.template.velocity.VelocityTemplateEngine;
 
-import java.io.File;
-import java.io.FileReader;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 public class Main {
 	public static BankDao bankDao;
@@ -28,16 +23,23 @@ public class Main {
 			bankDao.initBanks("banks-v1.json");
 			Initialized = true;
 		}
+		//BanksCacheBased.init();
 		//BanksRemoteCalls.init();
 
 		get("/v1/banks/all_json", (request, response) -> BanksCacheBased.handleBanksVOne_json(request, response));
 		get("/v1/banks/all", (req, res) -> {
-			Map<String, Object> model = handleBanksVOne_model();
+			Map<String, Object> model = BanksCacheBased.handleBanksVOne_model();
 			return new VelocityTemplateEngine().render(
-					new ModelAndView(model, "velocity/banks_v1.vm")
+					new ModelAndView(model, "velocity/banks.vm")
 			);
 		});
 		//get("/v1/banks/all", (request, response) -> BanksCacheBased.handle(request, response));
-		get("/v2/banks/all", (request, response) -> BanksRemoteCalls.handleBanksVTwo(request, response));
+		get("/v2/banks/all", (req, res) -> {
+			Map<String, Object> model = BanksRemoteCalls.handleBanksVTwo_model();
+			return new VelocityTemplateEngine().render(
+					new ModelAndView(model, "velocity/banks.vm")
+			);
+		});
+		get("/v2/banks/all_json", (request, response) -> BanksRemoteCalls.handleBanksVTwo_json(request, response));
 	}
 }

@@ -11,7 +11,13 @@
                 <ul>
                     <li>$bank.get("name")</li>
                     <li>$bank.get("countryCode")</li>
-                    <li>$bank.get("products")</li>
+
+                    #if($bank.get("products"))
+                        <li>$bank.get("products")</li>
+                    #end
+                    #if($bank.get("auth"))
+                        <li>$bank.get("auth")</li>
+                    #end
                 </ul>
             </li>
             #end

@@ -8,6 +8,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.bankbridge.Main;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -54,9 +55,16 @@ public class BanksRemoteCalls {
 		});
 		return js_arr;
 	}
-	public static JSONArray handleBanksVTwo(Request request, Response response) {
+	public static Map<String, Object> handleBanksVTwo_model() {
+		Map<String, Object> model = new HashMap<>();
+		JSONArray banks_json = getBanksRemoteJsonTwo();
+		model.put("banks", banks_json);
+		model.put("message", "Banks, Version 2, Remote");
+		return model;
+	}
+
+	public static JSONArray handleBanksVTwo_json(Request request, Response response) {
 		response.type("application/json");
 		return getBanksRemoteJsonTwo();
 	}
-
 }

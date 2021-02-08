@@ -1,5 +1,5 @@
 package io.bankbridge.handler;
-import java.io.File;
+import java.net.http.HttpResponse;
 import java.util.*;
 
 import io.bankbridge.Main;
@@ -14,18 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.bankbridge.model.BankModel;
 import io.bankbridge.model.BankModelList;
-import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
-import spark.Route;
-import util.JsonUtil;
-import util.ViewUtil;
-
-import static util.RequestUtil.clientAcceptsHtml;
 
 public class BanksCacheBased {
 
