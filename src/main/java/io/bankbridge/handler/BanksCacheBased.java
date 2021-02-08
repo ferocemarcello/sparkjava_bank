@@ -72,6 +72,7 @@ public class BanksCacheBased {
 		Map<String, Object> model = new HashMap<>();
 		model.put("banks", Main.bankDao.filterBanks(new String[]{"name","bic","countryCode","products"}));
 		model.put("message", "Banks, Version 1, Cached");
+		model.put("title", "Banks v1");
 		return model;
 	}
 

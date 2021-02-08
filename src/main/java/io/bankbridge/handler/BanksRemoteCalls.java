@@ -60,6 +60,7 @@ public class BanksRemoteCalls {
 		JSONArray banks_json = getBanksRemoteJsonTwo();
 		model.put("banks", banks_json);
 		model.put("message", "Banks, Version 2, Remote");
+		model.put("title", "Banks v2");
 		return model;
 	}
 
