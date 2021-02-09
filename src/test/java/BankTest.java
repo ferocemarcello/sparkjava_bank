@@ -1,5 +1,6 @@
 import io.bankbridge.Main;
 import io.bankbridge.model.BankDao;
+import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,11 +18,12 @@ import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.bankbridge.handler.BanksRemoteCalls.getBanksRemoteJsonTwo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class BankTest{
-    public static int rer=0;
+public class BankTest {
+    public static int rer = 0;
 
     @BeforeClass
     public static void Cacca() {
@@ -36,29 +38,40 @@ public class BankTest{
     public void testBankVersionOne() throws IOException, InterruptedException, ParseException {
         String url = "http://localhost:8080/v1/banks/all";
 
-        HttpResponse response = geResponse(url);
-        int statusCode = response.statusCode();
-        //String body = response.body(); we might need the bod
+        Map<String, Object> response_info = getResponseInfo(getResponse(url));
 
-        HttpHeaders headers = response.headers();
-        String version = headers.allValues("version").get(0);
-        String num_banks_header = headers.allValues("num_banks").get(0);
+        Map<String, Object> html_return = getHtmlContent(url);
+        var json_banks = Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "products"});
 
-        Map<String,Object> html_return = getHtmlContent(url);
-        Set<Set<Object>> bankset_json = getBankSet_vone();
-        Set<Set<Object>> bankset_html = (Set<Set<Object>>) html_return.get("bankset");
+        List<Set<Object>> banklist_json = getBankList(json_banks);
+        List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");
 
-        assertEquals(statusCode, 200);
-        assertEquals(version, "1");
-        assertEquals(num_banks_header, Integer.toString((Integer) html_return.get("num_banks")),"20");
-        assertTrue(bankset_html.equals(bankset_json));
+        assertEquals(response_info.get("statuscode"), 200);
+        assertEquals(response_info.get("version"), "1");
+        assertEquals((String) response_info.get("num_banks_header"), Integer.toString((Integer) html_return.get("num_banks")), "20");
+        assertTrue(banklist_html.containsAll(banklist_json) && banklist_json.containsAll(banklist_html));
     }
 
     @Test
     public void testBankVersionTwo() throws IOException, InterruptedException, ParseException {
         String url = "http://localhost:8080/v2/banks/all";
 
-        HttpResponse response = geResponse(url);
+        Map<String, Object> response_info = getResponseInfo(getResponse(url));
+
+        Map<String, Object> html_return = getHtmlContent(url);
+        JSONArray banks_json = getBanksRemoteJsonTwo();
+
+        List<Set<Object>> banklist_json = getBankList(banks_json);
+        List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");
+
+        assertEquals(response_info.get("statuscode"), 200);
+        assertEquals(response_info.get("version"), "2");
+        assertEquals((String) response_info.get("num_banks_header"), Integer.toString((Integer) html_return.get("num_banks")), "20");
+        assertTrue(banklist_html.containsAll(banklist_json) && banklist_json.containsAll(banklist_html));
+    }
+
+    private Map<String, Object> getResponseInfo(HttpResponse<String> response) {
+        Map<String, Object> response_info = new HashMap<>();
         int statusCode = response.statusCode();
         //String body = response.body(); we might need the bod
 
@@ -66,17 +79,20 @@ public class BankTest{
         String version = headers.allValues("version").get(0);
         String num_banks_header = headers.allValues("num_banks").get(0);
 
-        Map<String,Object> html_return = getHtmlContent(url);
-        Set<Set<Object>> bankset_json = getBankSet_vone();
-        Set<Set<Object>> bankset_html = (Set<Set<Object>>) html_return.get("bankset");
+        response_info.put("statuscode", statusCode);
+        response_info.put("version", version);
+        response_info.put("num_banks_header", num_banks_header);
 
-        assertEquals(statusCode, 200);
-        assertEquals(version, "2");
-        assertEquals(num_banks_header, Integer.toString((Integer) html_return.get("num_banks")),"20");
-        assertTrue(bankset_html.equals(bankset_json));
+        return response_info;
     }
 
-    private HttpResponse<String> geResponse(String url) throws IOException, InterruptedException {
+    private List<Set<Object>> getBankList(Collection<Map<String, Object>> input) {
+        List<Set<Object>> banklist = new ArrayList<>();
+        input.forEach(x -> banklist.add(getSetMapValues(x)));
+        return banklist;
+    }
+
+    private HttpResponse<String> getResponse(String url) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -87,42 +103,37 @@ public class BankTest{
         return response;
     }
 
-    private Set<Set<Object>> getBankSet_vone() {
-        var json_banks = Main.bankDao.filterBanks(new String[]{"name","bic","countryCode","products"});
-        Set<Set<Object>> bankset = new HashSet<>();
-
-        for (var m: json_banks) {
-            HashSet<Object> ob = new HashSet<>();
-            m.values().forEach(val -> ob.add(val));
-            bankset.add(ob);
-        }
-        return bankset;
+    private Set<Object> getSetMapValues(Map<String, Object> m) {
+        HashSet<Object> ob = new HashSet<>();
+        m.values().forEach(val -> ob.add(val));
+        return ob;
     }
 
     private Map<String, Object> getHtmlContent(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();
-        int num_banks_html = (int)doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() ==  "org.jsoup.nodes.Element").count();
-        var result = doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() ==  "org.jsoup.nodes.Element").collect(Collectors.toList());
-        Set<Set<Object>> bankset = new HashSet<>();
-        for (Node n: result
+        int num_banks_html = (int) doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() == "org.jsoup.nodes.Element").count();
+        var result = doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
+        List<Set<Object>> banklist = new ArrayList<>();
+        for (Node n : result
         ) {
             List<Node> collect = n.childNodes().get(1).childNodes().stream().filter(no -> no.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
             Set<Object> values = new HashSet<>();
-            for (Node c:collect
+            for (Node c : collect
             ) {
-                String element =((Element)c).text().trim();
-                if(element.contains("[")) {
-                    element = element.replaceAll("\\s+","").replaceAll("\\[|\\]","");
+                String element = ((Element) c).text().trim();
+                if (element.contains("[")) {
+                    element = element.replaceAll("\\s+", "").replaceAll("\\[|\\]", "");
                     List<String> productlist = new ArrayList<>(Arrays.asList(element.split(","))).stream().collect(Collectors.toList());
                     values.add(productlist);
+                } else {
+                    values.add(element);
                 }
-                else {values.add(element);}
             }
-            bankset.add(values);
+            banklist.add(values);
         }
         Map<String, Object> html_content = new HashMap<>();
-        html_content.put("num_banks",num_banks_html);
-        html_content.put("bankset",bankset);
+        html_content.put("num_banks", num_banks_html);
+        html_content.put("banklist", banklist);
         return html_content;
     }
 }
