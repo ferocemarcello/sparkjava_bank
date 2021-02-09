@@ -49,12 +49,6 @@ public class Main {
 					new ModelAndView(model, "velocity/banks.vm")
 			);
 		});
-		get("/hello", (req, res) -> {
-			Map<String, Object> model = BanksRemoteCalls.Hello();
-			return new VelocityTemplateEngine().render(
-					new ModelAndView(model, "velocity/hello.vm")
-			);
-		});
 		get("/v2/banks/all_json", (request, response) -> BanksRemoteCalls.handleBanksVTwo_json(request, response));
 	}
 }

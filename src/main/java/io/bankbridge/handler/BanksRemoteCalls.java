@@ -55,6 +55,7 @@ public class BanksRemoteCalls {
 		});
 		return js_arr;
 	}
+
 	public static Map<String, Object> handleBanksVTwo_model() {
 		Map<String, Object> model = new HashMap<>();
 		JSONArray banks_json = getBanksRemoteJsonTwo();
@@ -67,11 +68,5 @@ public class BanksRemoteCalls {
 	public static JSONArray handleBanksVTwo_json(Request request, Response response) {
 		response.type("application/json");
 		return getBanksRemoteJsonTwo();
-	}
-
-	public static Map<String, Object> Hello() {
-		Map<String, Object> model = new HashMap<>();
-		model.put("title", "Hello Trial");
-		return model;
 	}
 }
