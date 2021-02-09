@@ -17,11 +17,10 @@ public class Main {
 	public static BankDao bankDao;
 	public static boolean Initialized = false;
 	public static void main(String[] args) throws Exception {
-		bankDao = new BankDao();
-		
 		port(8080);
 
 		if(!Main.Initialized) {
+			bankDao = new BankDao();
 			bankDao.initBanks("banks-v1.json");
 			Initialized = true;
 		}

@@ -2,6 +2,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.bankbridge.Main;
+import io.bankbridge.model.BankDao;
 import junit.framework.TestCase;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -12,7 +13,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,27 +29,22 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class BankTest extends TestCase {
-    @Before
-    public void Init() {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+public class BankTest{
+    public static int rer=0;
+
+    @BeforeClass
+    public static void Cacca() {
         if (!Main.Initialized) {
+            Main.bankDao = new BankDao();
             Main.bankDao.initBanks("banks-v1.json");
             Main.Initialized = true;
         }
     }
 
     @Test
-    public void testOne() {
-        int num = 0 + 1;
-        assertTrue(num == 1);
-    }
-
-    @Test
-    public void testTwo() {
-        int num = 1 + 1;
-        assertTrue(num == 2);
-    }
-
     public void testBankVersionOne() throws IOException, InterruptedException, ParseException {
         String url = "http://localhost:8080/v1/banks/all";
         HttpClient client = HttpClient.newHttpClient();
@@ -55,55 +54,44 @@ public class BankTest extends TestCase {
         HttpResponse.BodyHandler<String> bh = HttpResponse.BodyHandlers.ofString();
         HttpResponse<String> response = client.send(req, bh);
         int statusCode = response.statusCode();
-        String body = response.body();
-
-        Document doc = Jsoup.connect("http://localhost:8080/v1/banks/all").get();
-        int num_banks_html = (int)doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() ==  "org.jsoup.nodes.Element").count();
-        var result = doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() ==  "org.jsoup.nodes.Element").collect(Collectors.toList());
-        Map<String,Object> bankmap = new HashMap<>();
-        for (Node n: result
-        ) {
-            String key = n.childNodes().get(0).toString().trim();
-            List<Node> collect = n.childNodes().get(1).childNodes().stream().filter(no -> no.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
-            List<Object> values = new ArrayList<>();
-            for (Node c:collect
-                 ) {
-                String element =((Element)c).text().trim();
-                if(!element.equals(key)) {
-                    if(element.contains("[")) {
-                        List<String> productlist = new ArrayList<>(Arrays.asList(element.split(","))).stream().collect(Collectors.toList());
-                        productlist.set(0,productlist.get(0).replace("[",""));
-                        productlist.set(productlist.size()-1,productlist.get(productlist.size()-1).replace("]",""));
-                        values.add(productlist);
-                    }
-                    else {values.add(element);}
-                }
-            }
-            /*collect.forEach(c-> {if(((Element)c).text() != key) {
-                if(((Element)c).text().contains("[")) {
-                    List<String> productlist = new ArrayList<>(Arrays.asList(((Element)c).text().split(",")));
-                    values.add(productlist);
-                }
-                else {values.add(((Element)c).text());}
-            }
-            });*/
-
-            //(List<Element>) (n.childNodes().get(1).childNodes().stream().filter(no -> no.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList()));
-            bankmap.put(n.toString(),((Element) n).text());
-        }
-        var cacca = result.get(0);
-        var pipi = cacca.childNodes().get(1).childNodes().stream().filter(n -> n.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
-        for (Node n: pipi
-             ) {
-            bankmap.put(n.toString(),((Element) n).text());
-        }
-        pipi.forEach(n -> {bankmap.put(n.toString(),"");});
+        //String body = response.body(); we might need the bod
+        Map<String,Object> html_return = getHtmlContent(url);
         HttpHeaders headers = response.headers();
         String version = headers.allValues("version").get(0);
         String num_banks_header = headers.allValues("num_banks").get(0);
+        var db_banks = Main.bankDao.filterBanks(new String[]{"name","bic","countryCode","products"});
+        Set<Object> bankset = new HashSet<>();
+        db_banks.forEach(x-> bankset.add((HashSet<Object>)x.values()));
         headers.allValues("date");
         assertEquals(statusCode, 200);
         assertEquals(version, "1");
-        assertEquals(num_banks_header, Integer.toString(num_banks_html),"20");
+        assertEquals(num_banks_header, Integer.toString((Integer) html_return.get("num_banks")),"20");
+    }
+
+    private Map<String, Object> getHtmlContent(String url) throws IOException {
+        Document doc = Jsoup.connect(url).get();
+        int num_banks_html = (int)doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() ==  "org.jsoup.nodes.Element").count();
+        var result = doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() ==  "org.jsoup.nodes.Element").collect(Collectors.toList());
+        Set<Set<Object>> banklist = new HashSet<>();
+        for (Node n: result
+        ) {
+            List<Node> collect = n.childNodes().get(1).childNodes().stream().filter(no -> no.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
+            Set<Object> values = new HashSet<>();
+            for (Node c:collect
+            ) {
+                String element =((Element)c).text().trim();
+                if(element.contains("[")) {
+                    element = element.replaceAll("\\s+","").replaceAll("\\[|\\]","");
+                    List<String> productlist = new ArrayList<>(Arrays.asList(element.split(","))).stream().collect(Collectors.toList());
+                    values.add(productlist);
+                }
+                else {values.add(element);}
+            }
+            banklist.add(values);
+        }
+        Map<String, Object> html_content = new HashMap<>();
+        html_content.put("num_banks",num_banks_html);
+        html_content.put("banklist",banklist);
+        return html_content;
     }
 }
