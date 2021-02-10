@@ -25,6 +25,9 @@ import static org.junit.Assert.assertTrue;
 public class BankTest {
     public static int rer = 0;
 
+    /**
+     * done before all tests, init the banks v1
+     */
     @BeforeClass
     public static void Setup() {
         if (!Main.Initialized) {
@@ -34,42 +37,68 @@ public class BankTest {
         }
     }
 
+    /**
+     * asserts all info returned from the http client are correct for banks v1
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ParseException
+     */
     @Test
     public void testBankVersionOne() throws IOException, InterruptedException, ParseException {
         String url = "http://localhost:8080/v1/banks/all";
 
-        Map<String, Object> response_info = getResponseInfo(getResponse(url));
+        Map<String, Object> response_info = getResponseInfo(getResponse(url));//gets the response info from the url
 
-        Map<String, Object> html_return = getHtmlContent(url);
+        Map<String, Object> html_return = getHtmlContent(url);//gets the html content from the url
         var json_banks = Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "products"});
 
+        //I get the banks as a list of banks. every bank is represented as a set, we don't care about the order.
+        //I use a list because it can happen to have multiple banks with the same value
         List<Set<Object>> banklist_json = getBankCollection(new ArrayList<>(), json_banks);
-        List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");
+        List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");//I get the same list from the html content
 
-        assertEquals(response_info.get("statuscode"), 200);
-        assertEquals(response_info.get("version"), "1");
+        assertEquals(response_info.get("statuscode"), 200);//assert response has status 200
+        assertEquals(response_info.get("version"), "1");//assert version is 1
+        //assert the info on the header about the number of banks is correct
         assertEquals((String) response_info.get("num_banks_header"), Integer.toString((Integer) html_return.get("num_banks")), "20");
+        //assert the two lists of banks have the same values
         assertTrue(banklist_html.containsAll(banklist_json) && banklist_json.containsAll(banklist_html));
     }
 
+    /**
+     * asserts all info returned from the http client are correct for banks v1
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ParseException
+     */
     @Test
     public void testBankVersionTwo() throws IOException, InterruptedException, ParseException {
         String url = "http://localhost:8080/v2/banks/all";
 
-        Map<String, Object> response_info = getResponseInfo(getResponse(url));
+        Map<String, Object> response_info = getResponseInfo(getResponse(url));//gets the response info from the url
 
-        Map<String, Object> html_return = getHtmlContent(url);
-        JSONArray banks_json = getBanksRemoteJsonTwo();
+        Map<String, Object> html_return = getHtmlContent(url);//gets the html content from the url
+        JSONArray banks_json = getBanksRemoteJsonTwo();//get the bank list v2 with remote calls
 
+        //I get the banks as a list of banks. every bank is represented as a set, we don't care about the order.
+        //I use a list because it can happen to have multiple banks with the same value
         List<Set<Object>> banklist_json = getBankCollection(new ArrayList<>(), banks_json);
         List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");
 
-        assertEquals(response_info.get("statuscode"), 200);
-        assertEquals(response_info.get("version"), "2");
+        assertEquals(response_info.get("statuscode"), 200);//assert response has status 200
+        assertEquals(response_info.get("version"), "2");//assert version is 2
+        //assert the info on the header about the number of banks is correct
         assertEquals((String) response_info.get("num_banks_header"), Integer.toString((Integer) html_return.get("num_banks")), "20");
+        //assert the two lists of banks have the same values
         assertTrue(banklist_html.containsAll(banklist_json) && banklist_json.containsAll(banklist_html));
     }
 
+    /**
+     * @param response
+     * @return infos from the response. like header, status
+     */
     private Map<String, Object> getResponseInfo(HttpResponse<String> response) {
         Map<String, Object> response_info = new HashMap<>();
         int statusCode = response.statusCode();
@@ -86,11 +115,23 @@ public class BankTest {
         return response_info;
     }
 
-    private <T extends Collection<Set<Object>>> T getBankCollection(T toadd, Collection<Map<String, Object>> input) {
-        input.forEach(x -> toadd.add(getSetMapValues(x)));
-        return toadd;
+    /**
+     * @param collection Collection where to insert new object of Set<Object>. Every Set<Object> is a bank
+     * @param input      Collection of banks from which to retrieve values. every entry is a map.
+     * @param <T>        Type wich extends Collection<Set<Object>>. can be a set or a list for instance
+     * @return Collection of the values of a bank. The values are packed into a set
+     */
+    private <T extends Collection<Set<Object>>> T getBankCollection(T collection, Collection<Map<String, Object>> input) {
+        input.forEach(x -> collection.add(getSetMapValues(x)));
+        return collection;
     }
 
+    /**
+     * @param url url of the request
+     * @return response from the request to the url
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private HttpResponse<String> getResponse(String url) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest req = HttpRequest.newBuilder()
@@ -102,24 +143,36 @@ public class BankTest {
         return response;
     }
 
-    private Set<Object> getSetMapValues(Map<String, Object> m) {
+    /**
+     * @param bankmap map of a  bank. string is key, object is value
+     * @return set with the values of a bank
+     */
+    private Set<Object> getSetMapValues(Map<String, Object> bankmap) {
         HashSet<Object> ob = new HashSet<>();
-        m.values().forEach(val -> ob.add(val));
+        bankmap.values().forEach(val -> ob.add(val));
         return ob;
     }
 
+    /**
+     * @param url url of the request
+     * @return content of the html page as a map
+     * @throws IOException
+     */
     private Map<String, Object> getHtmlContent(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();
+
+        //the banks are into a list with id "banklist"
+        //I get all the children, i.e. the banks
         int num_banks_html = (int) doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() == "org.jsoup.nodes.Element").count();
         var result = doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
 
         List<Set<Object>> banklist = new ArrayList<>();
-        result.forEach(n -> {
+        result.forEach(n -> {//I loop through all the fields (the bic, country code ...)
             List<Node> collect = n.childNodes().get(1).childNodes().stream().filter(no -> no.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
             Set<Object> values = new HashSet<>();
             collect.forEach(c -> {
-                String element = ((Element) c).text().trim();
-                if (element.contains("[")) {
+                String element = ((Element) c).text().trim();//the proper content, removing noisy spaces
+                if (element.contains("[")) {//products have "[" or "]" in the text. I have to remove these chars and put the products into a list
                     element = element.replaceAll("\\s+", "").replaceAll("\\[|\\]", "");
                     List<String> productlist = new ArrayList<>(Arrays.asList(element.split(","))).stream().collect(Collectors.toList());
                     values.add(productlist);

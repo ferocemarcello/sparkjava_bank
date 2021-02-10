@@ -1,10 +1,7 @@
 package io.bankbridge.model;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BankModel {
@@ -13,7 +10,7 @@ public class BankModel {
     private String name;
     private String countryCode;
     private String auth;
-    private ArrayList<String> products;
+    private List<String> products;
 
     public String getBic() {
         return bic;
@@ -47,7 +44,7 @@ public class BankModel {
         this.auth = auth;
     }
 
-    public ArrayList<String> getProducts() {
+    public List<String> getProducts() {
         return products;
     }
 
@@ -63,9 +60,16 @@ public class BankModel {
         this.products = products;
     }
 
+    /**
+     * converts a bankmodel object to a map
+     *
+     * @return map of key string, equals the field name, and Object value, the value of the field
+     */
     public Map<String, Object> BankToMap() {
         Map<String, Object> map = new HashMap<>();
+        //here I get the list of fields name from the class
         Arrays.asList(BankModel.class.getDeclaredFields()).stream().map(x -> x.getName()).collect(Collectors.toList()).forEach(field_name -> {
+            //then for every field name, I use the getter to get the value. I put field name and velue into the map
             try {
                 String methodName = "get" + field_name.substring(0, 1).toUpperCase() + field_name.substring(1);
                 var method = BankModel.class.getDeclaredMethod(methodName);

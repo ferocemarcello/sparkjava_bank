@@ -5,10 +5,13 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import spark.resource.ClassPathResource;
 
-import java.io.File;
 import java.io.FileReader;
 
 public class JsonUtil {
+    /**
+     * @param jsonpath path of the json file inside the folder resources
+     * @return the json object correspondent to the json file
+     */
     public static JSONObject getJsonFromFile(String jsonpath) {
         JSONParser parser = new JSONParser();
         try {
@@ -23,8 +26,12 @@ public class JsonUtil {
         }
     }
 
-    public static JSONArray getBanksJson(String json_name) {
-        JSONObject books_v1_json = JsonUtil.getJsonFromFile(json_name);
+    /**
+     * @param jsonpath path of the json file inside the folder resources
+     * @return the json object correspondent to the json file. Basically we skip the first key "banks"
+     */
+    public static JSONArray getBanksJson(String jsonpath) {
+        JSONObject books_v1_json = JsonUtil.getJsonFromFile(jsonpath);
         return (JSONArray) books_v1_json.get("banks");
     }
 }

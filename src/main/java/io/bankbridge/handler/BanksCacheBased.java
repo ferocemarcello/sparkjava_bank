@@ -1,25 +1,15 @@
 package io.bankbridge.handler;
 
-import java.net.http.HttpResponse;
-import java.util.*;
-
 import io.bankbridge.Main;
-import org.ehcache.Cache;
 import org.ehcache.CacheManager;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.bankbridge.model.BankModel;
-import io.bankbridge.model.BankModelList;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import spark.Request;
 import spark.Response;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BanksCacheBased {
 
@@ -58,11 +48,19 @@ public class BanksCacheBased {
 
     }*/
 
+    /**
+     * @param request
+     * @param response
+     * @return Data from version 1 (cached) as json
+     */
     public static JSONArray handleBanksVOne_json(Request request, Response response) {
         response.type("application/json");
         return BanksCacheBased.getBanksJsonVersionOne();
     }
 
+    /**
+     * @return a JsonArray of the data v1, present in memory, through the bankDao. it doesn't get the parameter "auth"
+     */
     public static JSONArray getBanksJsonVersionOne() {
         List<Map<String, Object>> filtered_banks = Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "products"});
         JSONArray jsonArray = new JSONArray();
@@ -70,6 +68,9 @@ public class BanksCacheBased {
         return jsonArray;
     }
 
+    /**
+     * @return model to be use in a template. the model has some data, and the list of banks v1 with all the details
+     */
     public static Map<String, Object> handleBanksVOne_model() {
         Map<String, Object> model = new HashMap<>();
         model.put("banks", Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "products"}));
