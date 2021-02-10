@@ -26,7 +26,7 @@ public class BankTest {
     public static int rer = 0;
 
     @BeforeClass
-    public static void Cacca() {
+    public static void Setup() {
         if (!Main.Initialized) {
             Main.bankDao = new BankDao();
             Main.bankDao.initBanks("banks-v1.json");
