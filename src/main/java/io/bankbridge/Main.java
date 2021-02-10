@@ -22,23 +22,21 @@ public class Main {
     public static boolean Initialized = false;
 
     private static String getVelocityTemplate(Request req, Response res, boolean isversion_one) {
-        if (clientAcceptsHtml(req)) {
-            res.type("text/html");
-            Map<String, Object> model;
-            if (isversion_one) {
-                res.header("num_banks", String.valueOf(BankModelList.banks.size()));
-                res.header("version", "1");
-                model = BanksCacheBased.handleBanksVOne_model();
-            } else {
-                String jsonpath = "banks-v2.json";
-                res.header("num_banks", String.valueOf(getJsonFromFile(jsonpath).size()));
-                res.header("version", "2");
-                model = BanksRemoteCalls.handleBanksVTwo_model();
-            }
-            return new VelocityTemplateEngine().render(
-                    new ModelAndView(model, "velocity/banks.vm")
-            );
-        } else return "Client does not accept HTML";
+        if (clientAcceptsHtml(req)) res.type("text/html");
+        Map<String, Object> model;
+        if (isversion_one) {
+            res.header("num_banks", String.valueOf(BankModelList.banks.size()));
+            res.header("version", "1");
+            model = BanksCacheBased.handleBanksVOne_model();
+        } else {
+            String jsonpath = "banks-v2.json";
+            res.header("num_banks", String.valueOf(getJsonFromFile(jsonpath).size()));
+            res.header("version", "2");
+            model = BanksRemoteCalls.handleBanksVTwo_model();
+        }
+        return new VelocityTemplateEngine().render(
+                new ModelAndView(model, "velocity/banks.vm")
+        );
     }
 
     public static void main(String[] args) throws Exception {
