@@ -18,8 +18,7 @@ public class JsonUtil {
             // A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
             JSONObject jsonObject = (JSONObject) obj;
             return jsonObject;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return null;
         }
     }
