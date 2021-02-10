@@ -1,72 +1,80 @@
 package io.bankbridge.model;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class BankModel {
-	
-	private String bic;
-	private String name;
-	private String countryCode;
-	private String auth;
-	private ArrayList<String> products;
 
-	public String getBic() {
-		return bic;
-	}
+    private String bic;
+    private String name;
+    private String countryCode;
+    private String auth;
+    private ArrayList<String> products;
 
-	public void setBic(String bic) {
-		this.bic = bic;
-	}
+    public String getBic() {
+        return bic;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public void setBic(String bic) {
+        this.bic = bic;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public String getCountryCode() {
-		return countryCode;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setCountryCode(String countryCode) {
-		this.countryCode = countryCode;
-	}
+    public String getCountryCode() {
+        return countryCode;
+    }
 
-	public String getAuth() {
-		return auth;
-	}
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
 
-	public void setAuth(String auth) {
-		this.auth = auth;
-	}
+    public String getAuth() {
+        return auth;
+    }
 
-	public ArrayList<String> getProducts() {
-		return products;
-	}
+    public void setAuth(String auth) {
+        this.auth = auth;
+    }
 
-	public void setProducts(ArrayList<String> products) {
-		this.products = products;
-	}
+    public ArrayList<String> getProducts() {
+        return products;
+    }
 
-	public BankModel(String bic, String name, String countryCode, String auth, ArrayList<String> products) {
-		this.bic = bic;
-		this.name = name;
-		this.countryCode = countryCode;
-		this.auth = auth;
-		this.products = products;
-	}
+    public void setProducts(ArrayList<String> products) {
+        this.products = products;
+    }
 
-	public Map<String,Object> BankToMap () {
-		Map<String,Object> map = new HashMap<>();
-		map.put("name",this.getName());
-		map.put("bic",this.getBic());
-		map.put("countryCode",this.getCountryCode());
-		map.put("products",this.getProducts());
-		map.put("auth",this.getAuth());
-		return map;
-	}
+    public BankModel(String bic, String name, String countryCode, String auth, ArrayList<String> products) {
+        this.bic = bic;
+        this.name = name;
+        this.countryCode = countryCode;
+        this.auth = auth;
+        this.products = products;
+    }
+
+    public Map<String, Object> BankToMap() {
+        Map<String, Object> map = new HashMap<>();
+        Arrays.asList(BankModel.class.getDeclaredFields()).stream().map(x -> x.getName()).collect(Collectors.toList()).forEach(field_name -> {
+            try {
+                String methodName = "get" + field_name.substring(0, 1).toUpperCase() + field_name.substring(1);
+                var method = BankModel.class.getDeclaredMethod(methodName);
+                var getterresult = method.invoke(this);
+                map.put(field_name, getterresult);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+        });
+        return map;
+    }
 }

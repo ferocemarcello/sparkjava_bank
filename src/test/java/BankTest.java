@@ -43,7 +43,7 @@ public class BankTest {
         Map<String, Object> html_return = getHtmlContent(url);
         var json_banks = Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "products"});
 
-        List<Set<Object>> banklist_json = getBankList(json_banks);
+        List<Set<Object>> banklist_json = getBankCollection(new ArrayList<>(), json_banks);
         List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");
 
         assertEquals(response_info.get("statuscode"), 200);
@@ -61,7 +61,7 @@ public class BankTest {
         Map<String, Object> html_return = getHtmlContent(url);
         JSONArray banks_json = getBanksRemoteJsonTwo();
 
-        List<Set<Object>> banklist_json = getBankList(banks_json);
+        List<Set<Object>> banklist_json = getBankCollection(new ArrayList<>(), banks_json);
         List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");
 
         assertEquals(response_info.get("statuscode"), 200);
@@ -86,10 +86,9 @@ public class BankTest {
         return response_info;
     }
 
-    private List<Set<Object>> getBankList(Collection<Map<String, Object>> input) {
-        List<Set<Object>> banklist = new ArrayList<>();
-        input.forEach(x -> banklist.add(getSetMapValues(x)));
-        return banklist;
+    private <T extends Collection<Set<Object>>> T getBankCollection(T toadd, Collection<Map<String, Object>> input) {
+        input.forEach(x -> toadd.add(getSetMapValues(x)));
+        return toadd;
     }
 
     private HttpResponse<String> getResponse(String url) throws IOException, InterruptedException {
@@ -113,13 +112,12 @@ public class BankTest {
         Document doc = Jsoup.connect(url).get();
         int num_banks_html = (int) doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() == "org.jsoup.nodes.Element").count();
         var result = doc.select("ul[id$=banklist]").get(0).childNodes().stream().filter(n -> n.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
+
         List<Set<Object>> banklist = new ArrayList<>();
-        for (Node n : result
-        ) {
+        result.forEach(n -> {
             List<Node> collect = n.childNodes().get(1).childNodes().stream().filter(no -> no.getClass().getName() == "org.jsoup.nodes.Element").collect(Collectors.toList());
             Set<Object> values = new HashSet<>();
-            for (Node c : collect
-            ) {
+            collect.forEach(c -> {
                 String element = ((Element) c).text().trim();
                 if (element.contains("[")) {
                     element = element.replaceAll("\\s+", "").replaceAll("\\[|\\]", "");
@@ -128,9 +126,10 @@ public class BankTest {
                 } else {
                     values.add(element);
                 }
-            }
+            });
             banklist.add(values);
-        }
+        });
+
         Map<String, Object> html_content = new HashMap<>();
         html_content.put("num_banks", num_banks_html);
         html_content.put("banklist", banklist);
