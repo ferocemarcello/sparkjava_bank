@@ -63,8 +63,7 @@ public class BanksRemoteCalls {
      */
     public static Map<String, Object> handleBanksVTwo_model() {
         Map<String, Object> model = new HashMap<>();
-        JSONArray banks_json = getBanksRemoteJsonTwo();
-        model.put("banks", banks_json);
+        model.put("banks", getBanksRemoteJsonTwo());
         model.put("message", "Banks, Version 2, Remote");
         model.put("title", "Banks v2");
         return model;

@@ -13,7 +13,8 @@
 <body>
 <h1>$message</h1>
 <script>
-    var current_pattern = "";//default search parameter
+    var current_pattern_name, current_pattern_bic, current_pattern_cc, current_pattern_products, current_pattern_auth;//default search parameters
+    current_pattern_name = current_pattern_bic = current_pattern_cc = current_pattern_products = current_pattern_auth = "";
     var current_size = 5;//default number of items per page
 </script>
 <label for="page_items">Number of banks per page (1-20):</label>
@@ -21,7 +22,11 @@
 <!-- notice I call the function resize page every time I search, or I change the page size.
 The page size, indeed, changes if we have less banks displayed due to the search-->
 <input type="number" id="page_items" min="1" max="20" value="5" onchange="resize_page()">
+<input type="text" id="namefilter" onkeyup="resize_page()" placeholder="Filter by Name">
+<input type="text" id="bicfilter" onkeyup="resize_page()" placeholder="Filter by Bic">
 <input type="text" id="ccfilter" onkeyup="resize_page()" placeholder="Filter by Country Code">
+<input type="text" id="productsfilter" onkeyup="resize_page()" placeholder="Filter by Products">
+<input type="text" id="authfilter" onkeyup="resize_page()" placeholder="Filter by Auth">
 <div id="listdiv">
     <ul id="banklist" class="list">
         <!-- with this foreach, I put all the banks that I got from the model, into html into a list ul -->
@@ -39,6 +44,14 @@ The page size, indeed, changes if we have less banks displayed due to the search
     <ul class="pagination" id="pager"></ul>
 </div>
 <script>
+
+        #if(!$banks.get(0).get("products"))
+        document.getElementById("productsfilter").remove();
+        #end
+        #if(!$banks.get(0).get("auth"))
+        document.getElementById("authfilter").remove();
+        #end
+
     <!-- here I instantiate the first time the paging -->
     new List('listdiv', {
         valueNames: ['name'],
@@ -49,7 +62,16 @@ The page size, indeed, changes if we have less banks displayed due to the search
     function resize_page() {
         //I change the number of element per page, and the search pattern. I get these values from the html elements
         current_size = parseInt(document.getElementById("page_items").value);
-        current_pattern = document.getElementById("ccfilter").value.toUpperCase()
+
+        current_pattern_name = document.getElementById("namefilter").value.toLowerCase();
+        current_pattern_bic = document.getElementById("bicfilter").value.toLowerCase();
+        current_pattern_cc = document.getElementById("ccfilter").value.toLowerCase();
+        #if($banks.get(0).get(
+            "products")) current_pattern_products = document.getElementById("productsfilter").value.toLowerCase();
+        #end
+        #if($banks.get(0).get("auth")) current_pattern_auth = document.getElementById("authfilter").value.toLowerCase();
+        #end
+
         var pager = document.getElementById("pager");
         //I remove the all the elements inside the pager element
         while (pager.firstChild) {
@@ -63,9 +85,22 @@ The page size, indeed, changes if we have less banks displayed due to the search
             banklist.removeChild(child);
         }
         //I put again the banks in html
+        var contains = false;
         #foreach($bank in $banks)
             //I have to take care of the search pattern
-            if ("$bank.get("countryCode")".includes(current_pattern)) {
+            //I have to take care of the search pattern
+            contains = false;
+            contains = "$bank.get("name")".toLowerCase().includes(current_pattern_name) && "$bank.get(
+                "bic")".toLowerCase().includes(current_pattern_bic) && "$bank.get(
+                "countryCode")".toLowerCase().includes(current_pattern_cc);
+            #if($bank.get("products")) contains = contains && "$bank.get(
+                "products")".toLowerCase().includes(current_pattern_products);
+            #end
+
+            #if($bank.get("auth")) contains = contains && "$bank.get(
+                "auth")".toLowerCase().includes(current_pattern_auth);
+            #end
+            if (contains) {
                 var li = document.createElement("li");
                 li.className = "name";
                 li.textContent = "$bank.get("bic");"

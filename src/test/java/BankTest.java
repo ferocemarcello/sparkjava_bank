@@ -1,4 +1,3 @@
-import io.bankbridge.Main;
 import io.bankbridge.model.BankDao;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
