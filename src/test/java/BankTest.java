@@ -1,3 +1,4 @@
+import com.sun.jdi.InterfaceType;
 import io.bankbridge.Main;
 import io.bankbridge.model.BankDao;
 import org.json.simple.JSONArray;
@@ -10,6 +11,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
@@ -45,7 +48,7 @@ public class BankTest {
      * @throws ParseException
      */
     @Test
-    public void testBankVersionOne() throws IOException, InterruptedException, ParseException {
+    public void testBankVersionOne() throws IOException, InterruptedException, ParseException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         String url = "http://localhost:8080/v1/banks/all";
 
         Map<String, Object> response_info = getResponseInfo(getResponse(url));//gets the response info from the url
@@ -55,7 +58,7 @@ public class BankTest {
 
         //I get the banks as a list of banks. every bank is represented as a set, we don't care about the order.
         //I use a list because it can happen to have multiple banks with the same value
-        List<Set<Object>> banklist_json = getBankCollection(new ArrayList<>(), json_banks);
+        List<Set<Object>> banklist_json = getBankCollection(ArrayList.class, json_banks);
         List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");//I get the same list from the html content
 
         assertEquals(response_info.get("statuscode"), 200);//assert response has status 200
@@ -74,7 +77,7 @@ public class BankTest {
      * @throws ParseException
      */
     @Test
-    public void testBankVersionTwo() throws IOException, InterruptedException, ParseException {
+    public void testBankVersionTwo() throws IOException, InterruptedException, ParseException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         String url = "http://localhost:8080/v2/banks/all";
 
         Map<String, Object> response_info = getResponseInfo(getResponse(url));//gets the response info from the url
@@ -84,7 +87,7 @@ public class BankTest {
 
         //I get the banks as a list of banks. every bank is represented as a set, we don't care about the order.
         //I use a list because it can happen to have multiple banks with the same value
-        List<Set<Object>> banklist_json = getBankCollection(new ArrayList<>(), banks_json);
+        List<Set<Object>> banklist_json = getBankCollection(ArrayList.class, banks_json);
         List<Set<Object>> banklist_html = (List<Set<Object>>) html_return.get("banklist");
 
         assertEquals(response_info.get("statuscode"), 200);//assert response has status 200
@@ -116,12 +119,12 @@ public class BankTest {
     }
 
     /**
-     * @param collection Collection where to insert new object of Set<Object>. Every Set<Object> is a bank
      * @param input      Collection of banks from which to retrieve values. every entry is a map.
-     * @param <T>        Type wich extends Collection<Set<Object>>. can be a set or a list for instance
+     * @param <T>        Type wich extends(or implements) Collection<Set<Object>>. can be a set or a list for instance
      * @return Collection of the values of a bank. The values are packed into a set
      */
-    private <T extends Collection<Set<Object>>> T getBankCollection(T collection, Collection<Map<String, Object>> input) {
+    private <T extends Collection<Set<Object>>> T getBankCollection(Class<T> cls, Collection<Map<String, Object>> input) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        T collection = cls.getConstructor().newInstance();
         input.forEach(x -> collection.add(getSetMapValues(x)));
         return collection;
     }
