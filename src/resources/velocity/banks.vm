@@ -88,13 +88,16 @@ The page size, indeed, changes if we have less banks displayed due to the search
         var contains = false;
         #foreach($bank in $banks)
             //I have to take care of the search pattern
-            //I have to take care of the search pattern
-            contains = false;
             contains = "$bank.get("name")".toLowerCase().includes(current_pattern_name) && "$bank.get(
                 "bic")".toLowerCase().includes(current_pattern_bic) && "$bank.get(
                 "countryCode")".toLowerCase().includes(current_pattern_cc);
-            #if($bank.get("products")) contains = contains && "$bank.get(
-                "products")".toLowerCase().includes(current_pattern_products);
+            #if($bank.get("products"))
+                var contains_prod = false;
+                #foreach($product in $bank.get(
+                    "products"))
+                    contains_prod = contains_prod || ("$product").toLowerCase().includes(current_pattern_products);
+                #end
+                contains = contains && contains_prod;
             #end
 
             #if($bank.get("auth")) contains = contains && "$bank.get(
