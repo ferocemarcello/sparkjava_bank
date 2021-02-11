@@ -17,11 +17,6 @@ import spark.template.velocity.VelocityTemplateEngine;
 import java.util.Map;
 
 public class Main {
-    /**
-     * instance of the bankDao
-     */
-    public static BankDao bankDao;
-    public static boolean Initialized = false;
 
     /**
      * @param req
@@ -55,11 +50,7 @@ public class Main {
         /**
          * It is supposed to initialize the banklist only once. The banklist might get initialized by other classes
          */
-        if (!Main.Initialized) {
-            bankDao = new BankDao();
-            bankDao.initBanks("banks-v1.json");
-            Initialized = true;
-        }
+        BankDao.getInstance().initBanks("banks-v1.json");
         //BanksCacheBased.init();
         //BanksRemoteCalls.init();
         //get("/v1/banks/all", (request, response) -> BanksCacheBased.handle(request, response));

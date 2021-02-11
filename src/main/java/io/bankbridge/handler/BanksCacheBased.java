@@ -1,6 +1,7 @@
 package io.bankbridge.handler;
 
 import io.bankbridge.Main;
+import io.bankbridge.model.BankDao;
 import org.ehcache.CacheManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -62,7 +63,7 @@ public class BanksCacheBased {
      * @return a JsonArray of the data v1, present in memory, through the bankDao. it doesn't get the parameter "auth"
      */
     public static JSONArray getBanksJsonVersionOne() {
-        List<Map<String, Object>> filtered_banks = Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "products"});
+        List<Map<String, Object>> filtered_banks = BankDao.getInstance().filterBanks(new String[]{"name", "bic", "countryCode", "products"});
         JSONArray jsonArray = new JSONArray();
         filtered_banks.forEach(m -> jsonArray.add(new JSONObject(m)));
         return jsonArray;
@@ -73,7 +74,7 @@ public class BanksCacheBased {
      */
     public static Map<String, Object> handleBanksVOne_model() {
         Map<String, Object> model = new HashMap<>();
-        model.put("banks", Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "products"}));
+        model.put("banks", BankDao.getInstance().filterBanks(new String[]{"name", "bic", "countryCode", "products"}));
         model.put("message", "Banks, Version 1, Cached");
         model.put("title", "Banks v1");
         return model;

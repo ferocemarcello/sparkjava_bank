@@ -1,4 +1,3 @@
-import com.sun.jdi.InterfaceType;
 import io.bankbridge.Main;
 import io.bankbridge.model.BankDao;
 import org.json.simple.JSONArray;
@@ -12,7 +11,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
@@ -33,11 +31,7 @@ public class BankTest {
      */
     @BeforeClass
     public static void Setup() {
-        if (!Main.Initialized) {
-            Main.bankDao = new BankDao();
-            Main.bankDao.initBanks("banks-v1.json");
-            Main.Initialized = true;
-        }
+        BankDao.getInstance().initBanks("banks-v1.json");
     }
 
     /**
@@ -54,7 +48,7 @@ public class BankTest {
         Map<String, Object> response_info = getResponseInfo(getResponse(url));//gets the response info from the url
 
         Map<String, Object> html_return = getHtmlContent(url);//gets the html content from the url
-        var json_banks = Main.bankDao.filterBanks(new String[]{"name", "bic", "countryCode", "products"});
+        var json_banks = BankDao.getInstance().filterBanks(new String[]{"name", "bic", "countryCode", "products"});
 
         //I get the banks as a list of banks. every bank is represented as a set, we don't care about the order.
         //I use a list because it can happen to have multiple banks with the same value

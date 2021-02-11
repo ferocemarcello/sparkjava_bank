@@ -7,29 +7,48 @@ import util.JsonUtil;
 import java.util.*;
 
 public class BankDao {
+
+    // static variable single_instance of type BankDao
+    private static BankDao single_instance = null;
+    private boolean initialized;
+
+    // private constructor restricted to this class itself
+    private BankDao() {
+        this.initialized = false;
+    }
+
+    // static method to create instance of BankDao class
+    public static BankDao getInstance() {
+        if (single_instance == null) single_instance = new BankDao();
+        return single_instance;
+    }
+
     /**
      * with this method, I put the data which is in the json v1, into a list of objects "BankModel"
      *
      * @param json_name is the string of the json file name, inside the resources folder
      */
     public void initBanks(String json_name) {
-        JSONArray banks_json_array = JsonUtil.getBanksJson(json_name);
-        List<BankModel> bankList = new ArrayList<>();
-        for (Object var : banks_json_array) {//I need to loop through all the fields in the json
-            String bic = ((JSONObject) var).get("bic").toString();
-            String name = ((JSONObject) var).get("name").toString();
-            String countryCode = ((JSONObject) var).get("countryCode").toString();
-            String auth = ((JSONObject) var).get("auth").toString();
+        if (!this.initialized) {
+            this.initialized = true;
+            JSONArray banks_json_array = JsonUtil.getBanksJson(json_name);
+            List<BankModel> bankList = new ArrayList<>();
+            for (Object var : banks_json_array) {//I need to loop through all the fields in the json
+                String bic = ((JSONObject) var).get("bic").toString();
+                String name = ((JSONObject) var).get("name").toString();
+                String countryCode = ((JSONObject) var).get("countryCode").toString();
+                String auth = ((JSONObject) var).get("auth").toString();
 
-            ArrayList<String> products = new ArrayList<>();
-            ((JSONArray) ((JSONObject) var).get("products")).forEach(product -> {
-                String product_string = (String) product;
-                products.add(product_string);
-            });
-            BankModel b = new BankModel(bic, name, countryCode, auth, products);//I create then an object of class BankModel
-            bankList.add(b);//I add the object a list of BankModel
+                ArrayList<String> products = new ArrayList<>();
+                ((JSONArray) ((JSONObject) var).get("products")).forEach(product -> {
+                    String product_string = (String) product;
+                    products.add(product_string);
+                });
+                BankModel b = new BankModel(bic, name, countryCode, auth, products);//I create then an object of class BankModel
+                bankList.add(b);//I add the object a list of BankModel
+            }
+            BankModelList.banks = bankList; // the list is assigned to the one in BankModelList
         }
-        BankModelList.banks = bankList; // the list is assigned to the one in BankModelList
     }
 
     /**
