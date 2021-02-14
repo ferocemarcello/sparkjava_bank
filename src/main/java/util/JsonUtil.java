@@ -3,9 +3,11 @@ package util;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import spark.resource.ClassPathResource;
+import org.json.simple.parser.ParseException;
 
-import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class JsonUtil {
     /**
@@ -14,16 +16,17 @@ public class JsonUtil {
      */
     public static JSONObject getJsonFromFile(String jsonpath) {
         JSONParser parser = new JSONParser();
+        InputStream is = JsonUtil.class.getClassLoader().getResourceAsStream(jsonpath);
+        JSONObject jsonObject = null;
         try {
-            ClassPathResource res = new ClassPathResource(jsonpath);
-            Object obj = parser.parse(new FileReader(res.getFile()));
-
-            // A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
-            JSONObject jsonObject = (JSONObject) obj;
-            return jsonObject;
-        } catch (Exception e) {
-            return null;
+            jsonObject = (JSONObject) parser.parse(
+                    new InputStreamReader(is, "UTF-8"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
+        return jsonObject;
     }
 
     /**
